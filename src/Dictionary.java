@@ -2,8 +2,21 @@ import java.util.*;
 import java.io.*;
 
 public class Dictionary {
+	static ArrayList<String> stopList = new ArrayList<String>();
 
 	public static void main(String[] args) {
+
+		Scanner readStop = null;
+		try {
+			readStop = new Scanner(new FileInputStream("stoplist.txt"));
+		} catch (FileNotFoundException e) {
+			System.out.println("File not found.");
+			System.exit(0);
+		}
+		while (readStop.hasNext()) {
+			stopList.add(readStop.next());
+		}
+
 		HashMap<String, Integer> DF = new HashMap<String, Integer>(); // 存term與DF的對照
 		HashMap<String, Double> IDF = new HashMap<String, Double>(); // 存term與IDF的對照
 		HashMap<String, Integer> tID = new HashMap<String, Integer>(); // 存term與t_index的對照
@@ -40,7 +53,7 @@ public class Dictionary {
 			System.err.println("Error: " + e.getMessage());
 		}
 
-		//把每篇文章每個term的TFIDF算出來照順序排好
+		// 把每篇文章每個term的TFIDF算出來照順序排好
 		for (int i = 1; i <= 1095; i++) {
 			TFIDF = TFIDF(normalTF(tokenize(i)), IDF);
 			List<Map.Entry<String, Double>> list_Data2 = new ArrayList<Map.Entry<String, Double>>(
@@ -71,23 +84,11 @@ public class Dictionary {
 		System.out.println(cosine(1, 2, IDF));
 	}
 
-	//輸入文章的ID回傳一個tokenize過的ArrayList
+	// 輸入文章的ID回傳一個tokenize過的ArrayList
 	public static ArrayList<String> tokenize(int file) {
 
 		Scanner fileIn = null;
-		Scanner readStop = null;
-		ArrayList<String> stopList = new ArrayList<String>(); // stopList
 		ArrayList<String> words = new ArrayList<String>();
-
-		try {
-			readStop = new Scanner(new FileInputStream("stoplist.txt"));
-		} catch (FileNotFoundException e) {
-			System.out.println("File not found.");
-			System.exit(0);
-		}
-		while (readStop.hasNext()) {
-			stopList.add(readStop.next());
-		}
 
 		try {
 			fileIn = new Scanner(new FileInputStream("IRTM/" + file + ".txt"));
@@ -132,11 +133,11 @@ public class Dictionary {
 
 		}
 		fileIn.close();
-		readStop.close();
+		// readStop.close();
 		return words;
 	}
 
-	//輸入ArrayList回傳TF，且TF為normalize過的
+	// 輸入ArrayList回傳TF，且TF為normalize過的
 	public static HashMap<String, Double> normalTF(ArrayList<String> tokens) {
 		HashMap<String, Integer> TF = new HashMap<String, Integer>();
 		HashMap<String, Double> normalTF = new HashMap<String, Double>();
@@ -157,7 +158,7 @@ public class Dictionary {
 		return normalTF;
 	}
 
-	//從每一篇文章的TF求得DF
+	// 從每一篇文章的TF求得DF
 	public static HashMap<String, Integer> DF() {
 		HashMap<String, Double> tf = new HashMap<String, Double>();
 		HashMap<String, Integer> df = new HashMap<String, Integer>();
@@ -173,8 +174,8 @@ public class Dictionary {
 		}
 		return df;
 	}
-	
-	//從DF算出IDF = log(N/(1+DF))
+
+	// 從DF算出IDF = log(N/(1+DF))
 	public static HashMap<String, Double> IDF(HashMap<String, Integer> DF) {
 
 		HashMap<String, Double> idf = new HashMap<String, Double>();
@@ -185,7 +186,7 @@ public class Dictionary {
 		return idf;
 	}
 
-	//輸入DF，每個term給他一個t_index
+	// 輸入DF，每個term給他一個t_index
 	public static HashMap<String, Integer> tID(HashMap<String, Integer> DF) {
 		HashMap<String, Integer> tID = new HashMap<String, Integer>();
 		List<Map.Entry<String, Integer>> list_Data = new ArrayList<Map.Entry<String, Integer>>(
@@ -206,7 +207,7 @@ public class Dictionary {
 		return tID;
 	}
 
-	//輸入TF 跟IDF算出TFIDF，並除以長度算出uni vector
+	// 輸入TF 跟IDF算出TFIDF，並除以長度算出uni vector
 	public static HashMap<String, Double> TFIDF(
 			HashMap<String, Double> normalTF, HashMap<String, Double> IDF) {
 
@@ -225,16 +226,15 @@ public class Dictionary {
 		}
 		return uniVector;
 	}
-		
-	//輸入兩篇文章ID，回傳cosine的值
+
+	// 輸入兩篇文章ID，回傳cosine的值
 	public static double cosine(int x, int y, HashMap<String, Double> IDF) {
 
 		HashMap<String, Double> uniX = new HashMap<String, Double>();
 		HashMap<String, Double> uniY = new HashMap<String, Double>();
-		
+
 		uniX = TFIDF(normalTF(tokenize(x)), IDF);
 		uniY = TFIDF(normalTF(tokenize(y)), IDF);
-		
 
 		double cos = 0;
 		for (String term : uniX.keySet()) {
